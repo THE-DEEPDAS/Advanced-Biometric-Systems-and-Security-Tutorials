@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-09-06T18:27:00.322345",
+  "dataset_info": {
+    "total_subjects": 200,
+    "genuine_pairs": 200,
+    "impostor_pairs_tested": 5000
+  },
+  "variants": {
+    "REAL": {
+      "statistics": {
+        "genuine": {
+          "mean": 0.9999988263134135,
+          "std": 1.3094117333038763e-06,
+          "min": 0.9999914029821715,
+          "max": 0.9999999990385802
+        },
+        "impostor": {
+          "mean": 0.9997067253535444,
+          "std": 0.0003019978962411122,
+          "min": 0.9992741463700563,
+          "max": 0.9999999992342079
+        }
+      },
+      "performance_metrics": {
+        "eer": 0.5,
+        "eer_threshold": 0.9892741463700563,
+        "auc": 0.761512,
+        "separability_gap": 0.00029210095986909046
+      },
+      "threshold_operating_points": [
+        {
+          "threshold": 0.55,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.9,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        }
+      ]
+    },
+    "GAUSSIAN": {
+      "statistics": {
+        "genuine": {
+          "mean": 0.9999991413677423,
+          "std": 8.33581095254484e-07,
+          "min": 0.9999957577727245,
+          "max": 0.9999999997490258
+        },
+        "impostor": {
+          "mean": 0.9997257424078938,
+          "std": 0.00027732696878596664,
+          "min": 0.9993108212953198,
+          "max": 0.9999999981735415
+        }
+      },
+      "performance_metrics": {
+        "eer": 0.5,
+        "eer_threshold": 0.9893108212953198,
+        "auc": 0.809049,
+        "separability_gap": 0.00027339895984845874
+      },
+      "threshold_operating_points": [
+        {
+          "threshold": 0.55,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.9,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        }
+      ]
+    },
+    "SALT_PEPPER": {
+      "statistics": {
+        "genuine": {
+          "mean": 0.999998892065519,
+          "std": 1.0717488512974965e-06,
+          "min": 0.9999945641447373,
+          "max": 0.999999990605697
+        },
+        "impostor": {
+          "mean": 0.9997361961143624,
+          "std": 0.0002665487589257123,
+          "min": 0.9993427063713068,
+          "max": 0.9999999991389958
+        }
+      },
+      "performance_metrics": {
+        "eer": 0.5,
+        "eer_threshold": 0.9893427063713068,
+        "auc": 0.7698130000000001,
+        "separability_gap": 0.0002626959511565774
+      },
+      "threshold_operating_points": [
+        {
+          "threshold": 0.55,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        },
+        {
+          "threshold": 0.9,
+          "FMR": 1.0,
+          "FNMR": 0.0,
+          "MATED": 1.0,
+          "NONMATED": 1.0
+        }
+      ]
+    }
+  }
+}
