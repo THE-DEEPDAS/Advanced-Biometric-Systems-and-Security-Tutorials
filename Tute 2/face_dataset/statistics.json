@@ -1,0 +1,22 @@
+{
+  "total_subjects": 200,
+  "total_images": 1200,
+  "gender_distribution": {
+    "M": 87,
+    "F": 113
+  },
+  "ethnicity_distribution": {
+    "African": 53,
+    "Asian": 54,
+    "Caucasian": 64,
+    "Hispanic": 29
+  },
+  "age_statistics": {
+    "min_age": 18,
+    "max_age": 80,
+    "avg_age": 46.895,
+    "min_age_gap": 1,
+    "max_age_gap": 5,
+    "avg_age_gap": 3.04
+  }
+}

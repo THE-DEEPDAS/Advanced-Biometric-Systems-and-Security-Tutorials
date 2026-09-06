@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-09-04T05:22:48.118939",
+  "dataset": {
+    "total_subjects": 200,
+    "total_genuine_pairs": 200,
+    "total_impostor_pairs_tested": 1000
+  },
+  "performance": {
+    "REAL": {
+      "variant": "REAL",
+      "genuine_mean": 0.9999988263134134,
+      "genuine_std": 1.3094117332836716e-06,
+      "genuine_min": 0.9999914029821715,
+      "genuine_max": 0.9999999990385802,
+      "impostor_mean": 0.9996844843110851,
+      "impostor_std": 0.00030183378826963554,
+      "impostor_min": 0.9992875947718858,
+      "impostor_max": 0.999999994416303,
+      "num_genuine_pairs": 200,
+      "num_impostor_pairs": 1000,
+      "fmr_at_0001": 1.0,
+      "fnmr_at_0001": 0.0,
+      "eer": 1.0,
+      "eer_threshold": 0.0,
+      "auc": 0.78128
+    },
+    "GAUSSIAN": {
+      "variant": "GAUSSIAN",
+      "genuine_mean": 0.9999991413677423,
+      "genuine_std": 8.335810952512024e-07,
+      "genuine_min": 0.9999957577727245,
+      "genuine_max": 0.9999999997490258,
+      "impostor_mean": 0.999712761986562,
+      "impostor_std": 0.00027837753006202233,
+      "impostor_min": 0.9993386198206295,
+      "impostor_max": 0.9999999871038457,
+      "num_genuine_pairs": 200,
+      "num_impostor_pairs": 1000,
+      "fmr_at_0001": 1.0,
+      "fnmr_at_0001": 0.0,
+      "eer": 1.0,
+      "eer_threshold": 0.0,
+      "auc": 0.8313699999999999
+    },
+    "SALT_PEPPER": {
+      "variant": "SALT_PEPPER",
+      "genuine_mean": 0.999998892065519,
+      "genuine_std": 1.0717488513072812e-06,
+      "genuine_min": 0.9999945641447373,
+      "genuine_max": 0.9999999906056969,
+      "impostor_mean": 0.9997444371417931,
+      "impostor_std": 0.0002656985682860118,
+      "impostor_min": 0.9993727709459751,
+      "impostor_max": 0.999999998224305,
+      "num_genuine_pairs": 200,
+      "num_impostor_pairs": 1000,
+      "fmr_at_0001": 1.0,
+      "fnmr_at_0001": 0.0,
+      "eer": 1.0,
+      "eer_threshold": 0.0,
+      "auc": 0.764705
+    }
+  }
+}

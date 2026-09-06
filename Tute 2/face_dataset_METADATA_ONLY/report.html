@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facial Recognition Dataset Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th {
+            background-color: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .img-preview {
+            max-width: 300px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 5px 5px 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 Facial Recognition Dataset Report</h1>
+        <p>Complete Analysis and Statistics</p>
+    </div>
+    
+    <div class="section">
+        <h2>📊 Quick Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Subjects</div>
+                <div class="stat-value">200</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Images</div>
+                <div class="stat-value">1200</div>
+                <div class="stat-label" style="opacity: 0.7;">(including all variants)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Image Variants</div>
+                <div class="stat-value">3</div>
+                <div class="stat-label" style="opacity: 0.7;">REAL, GAUSSIAN, SALT-PEPPER</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Ethnicities</div>
+                <div class="stat-value">4</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>👥 Gender Distribution</h2>
+        <table>
+            <tr>
+                <th>Gender</th>
+                <th>Count</th>
+                <th>Percentage</th>
+            </tr>
+            <tr>
+                <td>Male</td>
+                <td>87</td>
+                <td>43.5%</td>
+            </tr>
+            <tr>
+                <td>Female</td>
+                <td>113</td>
+                <td>56.5%</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>🌍 Ethnicity Distribution</h2>
+        <table>
+            <tr>
+                <th>Ethnicity</th>
+                <th>Count</th>
+                <th>Percentage</th>
+            </tr>
+
+            <tr>
+                <td>African</td>
+                <td>53</td>
+                <td>26.5%</td>
+            </tr>
+
+            <tr>
+                <td>Asian</td>
+                <td>54</td>
+                <td>27.0%</td>
+            </tr>
+
+            <tr>
+                <td>Caucasian</td>
+                <td>64</td>
+                <td>32.0%</td>
+            </tr>
+
+            <tr>
+                <td>Hispanic</td>
+                <td>29</td>
+                <td>14.5%</td>
+            </tr>
+
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>🎂 Age Statistics</h2>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Minimum Age</td>
+                <td>18 years</td>
+            </tr>
+            <tr>
+                <td>Maximum Age</td>
+                <td>80 years</td>
+            </tr>
+            <tr>
+                <td>Average Age</td>
+                <td>46.9 years</td>
+            </tr>
+            <tr>
+                <td>Median Age</td>
+                <td>47.0 years</td>
+            </tr>
+            <tr>
+                <td>Average Age Gap (Image 1 → Image 2)</td>
+                <td>3.04 years</td>
+            </tr>
+            <tr>
+                <td>Age Gap Range</td>
+                <td>1 - 5 years</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>🔀 Gender-Ethnicity Cross-tabulation</h2>
+        <table>
+            <tr>
+                <th>Ethnicity</th>
+                <th>Male</th>
+                <th>Female</th>
+                <th>Total</th>
+            </tr>
+
+            <tr>
+                <td>African</td>
+                <td>26</td>
+                <td>27</td>
+                <td><strong>53</strong></td>
+            </tr>
+
+            <tr>
+                <td>Asian</td>
+                <td>19</td>
+                <td>35</td>
+                <td><strong>54</strong></td>
+            </tr>
+
+            <tr>
+                <td>Caucasian</td>
+                <td>30</td>
+                <td>34</td>
+                <td><strong>64</strong></td>
+            </tr>
+
+            <tr>
+                <td>Hispanic</td>
+                <td>12</td>
+                <td>17</td>
+                <td><strong>29</strong></td>
+            </tr>
+
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📂 Dataset Directory Structure</h2>
+        <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto;">
+face_dataset/
+├── REAL/                      # 400 clean, original images
+│   ├── S0001_001.jpg
+│   ├── S0001_002.jpg
+│   └── ...
+├── GAUSSIAN/                  # 400 images with Gaussian noise
+│   ├── S0001_001.jpg
+│   ├── S0001_002.jpg
+│   └── ...
+├── SALT_PEPPER/               # 400 images with salt-pepper noise
+│   ├── S0001_001.jpg
+│   ├── S0001_002.jpg
+│   └── ...
+├── metadata.json              # Complete metadata for all subjects
+├── statistics.json            # Dataset statistics
+├── dataset_analysis.png       # Visual analysis charts
+├── report.html               # This report
+└── README.md                 # Detailed documentation
+        </pre>
+    </div>
+    
+    <div class="section">
+        <h2>✅ Dataset Specifications</h2>
+        <div class="stats-grid">
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-label">Image Resolution</div>
+                <div class="stat-value">256×256 px</div>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-label">Image Format</div>
+                <div class="stat-value">JPEG (Quality: 95%)</div>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-label">Color Space</div>
+                <div class="stat-value">RGB</div>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-label">Total Data Size</div>
+                <div class="stat-value">≈ 1.2 GB</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🔬 Pipeline Usage</h2>
+        <h3>1. Face Detection (MTCNN)</h3>
+        <pre><code>from mtcnn import MTCNN
+detector = MTCNN()
+faces = detector.detect_faces(img)</code></pre>
+        
+        <h3>2. Face Alignment & Preprocessing</h3>
+        <pre><code>import cv2
+aligned_face = cv2.dnn.readNetFromCaffe(...)
+# Normalize and align detected faces</code></pre>
+        
+        <h3>3. Feature Extraction (FaceNet/PFE)</h3>
+        <pre><code>from facenet_pytorch import InceptionResnetV1
+model = InceptionResnetV1(pretrained='vggface2').eval()
+embedding = model(face_image)</code></pre>
+        
+        <h3>4. Similarity Calculation</h3>
+        <pre><code>from scipy.spatial.distance import cosine
+similarity = 1 - cosine(embedding1, embedding2)
+# Calculate FMR/FNMR metrics</code></pre>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Evaluation Metrics</h2>
+        <p><strong>For each dataset variant (REAL, GAUSSIAN, SALT-PEPPER):</strong></p>
+        <ul>
+            <li><strong>FMR (False Match Rate):</strong> Probability of incorrectly accepting impostors</li>
+            <li><strong>FNMR (False Non-Match Rate):</strong> Probability of rejecting genuine pairs</li>
+            <li><strong>EER (Equal Error Rate):</strong> Point where FMR = FNMR</li>
+            <li><strong>AUC (Area Under Curve):</strong> Overall discrimination ability</li>
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p>📊 Dataset generated and analyzed</p>
+        <p>For detailed metadata, see <code>metadata.json</code></p>
+    </div>
+</body>
+</html>
