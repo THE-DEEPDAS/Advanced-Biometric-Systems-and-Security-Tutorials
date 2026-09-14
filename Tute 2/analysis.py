@@ -7,6 +7,7 @@ Comprehensive FMR/FNMR analysis with varying thresholds and detailed metrics
 
 import os
 import json
+import csv
 import numpy as np
 import cv2
 from pathlib import Path
@@ -15,6 +16,8 @@ from matplotlib.gridspec import GridSpec
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve
 import seaborn as sns
 from datetime import datetime
+import torch
+from facenet_pytorch import InceptionResnetV1
 
 
 print("=" * 80)
@@ -23,18 +26,31 @@ print("FMR/FNMR Analysis with Varying Thresholds")
 print("=" * 80)
 
 
-dataset_path = "face_dataset"
-metadata_path = f"{dataset_path}/metadata.json"
+BASE_DIR = Path(__file__).resolve().parent
+dataset_path = str(BASE_DIR / "age_gap_dataset")
+metadata_path = os.path.join(dataset_path, "metadata.csv")
+VARIANTS = ["AGE_GAP"]
+os.environ.setdefault("TORCH_HOME", str(BASE_DIR / "torch_cache"))
 
 
 # ============================================================
 # LOAD METADATA
 # ============================================================
 
-with open(metadata_path, 'r') as f:
-    metadata = json.load(f)
+with open(metadata_path, "r", newline="", encoding="utf-8-sig") as f:
+    metadata = list(csv.DictReader(f))
+
+# Normalize the CSV representation to the pair format used by the evaluator.
+# Paths in the CSV are relative to age_gap_dataset and use Windows separators.
+for record in metadata:
+    record["subject_id"] = str(record["subject_id"])
+    record["image1_age_gap"] = record["image_1"]
+    record["image2_age_gap"] = record["image_2"]
 
 print(f"\n✓ Loaded metadata for {len(metadata)} subjects")
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+FACE_MODEL = InceptionResnetV1(pretrained="vggface2").eval().to(DEVICE)
 
 
 # ============================================================
@@ -95,66 +111,49 @@ class AdvancedFaceRecognitionEvaluator:
     # --------------------------------------------------------
 
     def extract_features(self, face_img):
-        """Extract features: histogram + moments"""
+        """Extract a 512-D FaceNet identity embedding."""
+        image = cv2.resize(face_img, (160, 160), interpolation=cv2.INTER_AREA)
+        tensor = torch.from_numpy(image).permute(2, 0, 1).float()
+        tensor = (tensor - 0.5) / 0.5
+        tensor = tensor.unsqueeze(0).to(DEVICE)
+        with torch.inference_mode():
+            embedding = FACE_MODEL(tensor).cpu().numpy().ravel()
+        return embedding / (np.linalg.norm(embedding) + 1e-8)
 
-        face_norm = face_img.astype(np.float32)
+        hog = cv2.HOGDescriptor(
+            (128, 128), (16, 16), (8, 8), (8, 8), 9
+        ).compute(gray).ravel()
+        hog /= np.linalg.norm(hog) + 1e-8
 
-        # Color histogram features
-        hist_features = []
+        # Low-frequency structure is more age-stable than individual pixels.
+        structure = cv2.resize(gray, (32, 32), interpolation=cv2.INTER_AREA)
+        structure = (structure.astype(np.float32) - structure.mean()) / (structure.std() + 1e-6)
+        structure = structure.ravel()
+        structure /= np.linalg.norm(structure) + 1e-8
 
-        for i in range(3):
+        hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        appearance = []
+        for channel, upper in ((hsv[:, :, 0], 180), (hsv[:, :, 1], 256), (gray, 256)):
+            hist = cv2.calcHist([channel], [0], None, [32], [0, upper]).ravel()
+            hist /= hist.sum() + 1e-8
+            appearance.extend(hist)
+        appearance = np.asarray(appearance, dtype=np.float32)
 
-            hist = cv2.calcHist(
-                [face_norm[:, :, i]],
-                [0],
-                None,
-                [16],
-                [0, 1]
-            )
-
-            hist_features.extend(hist.flatten())
-
-        # Image moments
-        gray = cv2.cvtColor(
-            (face_norm * 255).astype(np.uint8),
-            cv2.COLOR_RGB2GRAY
-        )
-
-        moments = cv2.moments(gray)
-
-        moment_features = [
-            moments['m00'],
-            moments['m10'],
-            moments['m01'],
-            moments['mu20'],
-            moments['mu02'],
-            moments['mu11']
-        ]
-
+        # Weight the parts explicitly so no single feature family dominates.
         features = np.concatenate([
-            hist_features,
-            moment_features
+            0.60 * hog,
+            0.25 * structure,
+            0.15 * appearance
         ])
-
-        features = features / (
-            np.linalg.norm(features) + 1e-8
-        )
-
-        return features
+        return features / (np.linalg.norm(features) + 1e-8)
 
     # --------------------------------------------------------
     # Similarity
     # --------------------------------------------------------
 
     def calculate_similarity(self, embedding1, embedding2):
-        """Calculate cosine similarity"""
-
-        similarity = np.dot(
-            embedding1,
-            embedding2
-        )
-
-        return float(similarity)
+        """Calculate cosine similarity between FaceNet embeddings."""
+        return float(np.dot(embedding1, embedding2))
 
     # --------------------------------------------------------
     # Process all images
@@ -170,11 +169,7 @@ class AdvancedFaceRecognitionEvaluator:
 
             subject_id = record['subject_id']
 
-            for variant in [
-                'REAL',
-                'GAUSSIAN',
-                'SALT_PEPPER'
-            ]:
+            for variant in VARIANTS:
 
                 img1 = self.load_image(
                     record[f'image1_{variant.lower()}']
@@ -398,16 +393,13 @@ class AdvancedFaceRecognitionEvaluator:
         # Specific threshold values
         # ====================================================
 
-        key_thresholds = [
-            0.55,
-            0.60,
-            0.65,
-            0.70,
-            0.75,
-            0.80,
-            0.85,
-            0.90
-        ]
+        # FaceNet cosine scores are not restricted to the old 0.55--0.90
+        # range; choose operating points from the observed score range.
+        key_thresholds = np.linspace(
+            np.percentile(all_scores, 10),
+            np.percentile(all_scores, 90),
+            8
+        ).tolist()
 
         threshold_metrics = []
 
@@ -577,11 +569,7 @@ evaluator.process_all_images()
 
 all_results = {}
 
-for variant in [
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]:
+for variant in VARIANTS:
 
     all_results[variant] = (
         evaluator.evaluate_with_thresholds(
@@ -604,9 +592,10 @@ print("-" * 80)
 
 fig1, axes = plt.subplots(
     1,
-    3,
+    len(VARIANTS),
     figsize=(18, 5)
 )
+axes = np.atleast_1d(axes)
 
 fig1.suptitle(
     'FMR/FNMR vs Threshold - All Variants',
@@ -614,11 +603,7 @@ fig1.suptitle(
     fontweight='bold'
 )
 
-for col, variant in enumerate([
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]):
+for col, variant in enumerate(VARIANTS):
 
     ax = axes[col]
 
@@ -707,9 +692,10 @@ plt.close()
 
 fig2, axes = plt.subplots(
     1,
-    3,
+    len(VARIANTS),
     figsize=(18, 5)
 )
+axes = np.atleast_1d(axes)
 
 fig2.suptitle(
     'ROC Curves - All Variants',
@@ -717,11 +703,7 @@ fig2.suptitle(
     fontweight='bold'
 )
 
-for col, variant in enumerate([
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]):
+for col, variant in enumerate(VARIANTS):
 
     ax = axes[col]
 
@@ -801,10 +783,11 @@ plt.close()
 # ============================================================
 
 fig3, axes = plt.subplots(
-    3,
+    len(VARIANTS),
     3,
     figsize=(16, 12)
 )
+axes = np.atleast_2d(axes)
 
 fig3.suptitle(
     'Score Distributions - Genuine vs Impostor',
@@ -812,11 +795,7 @@ fig3.suptitle(
     fontweight='bold'
 )
 
-for row, variant in enumerate([
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]):
+for row, variant in enumerate(VARIANTS):
 
     data = all_results[variant]
 
@@ -1003,9 +982,10 @@ plt.close()
 
 fig4, axes = plt.subplots(
     1,
-    3,
+    len(VARIANTS),
     figsize=(16, 4)
 )
+axes = np.atleast_1d(axes)
 
 fig4.suptitle(
     'FMR/FNMR Heatmap - Key Threshold Points',
@@ -1013,11 +993,7 @@ fig4.suptitle(
     fontweight='bold'
 )
 
-for col, variant in enumerate([
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]):
+for col, variant in enumerate(VARIANTS):
 
     ax = axes[col]
 
@@ -1145,11 +1121,7 @@ fig5.suptitle(
     fontweight='bold'
 )
 
-variants = [
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]
+variants = VARIANTS
 
 
 # ------------------------------------------------------------
@@ -1442,11 +1414,7 @@ def get_threshold_metric(data, threshold):
     }
 
 
-for idx, variant in enumerate([
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]):
+for idx, variant in enumerate(VARIANTS):
 
     data = all_results[variant]
 
@@ -1639,7 +1607,7 @@ comprehensive_results = {
 
         'impostor_pairs_tested':
             len(
-                all_results['REAL']['impostor_scores']
+            all_results[VARIANTS[0]]['impostor_scores']
             )
 
     },
@@ -1649,11 +1617,7 @@ comprehensive_results = {
 }
 
 
-for variant in [
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]:
+for variant in VARIANTS:
 
     data = all_results[variant]
 
@@ -1736,11 +1700,7 @@ with open(
         "=" * 100 + "\n\n"
     )
 
-    for variant in [
-        'REAL',
-        'GAUSSIAN',
-        'SALT_PEPPER'
-    ]:
+    for variant in VARIANTS:
 
         data = all_results[variant]
 
@@ -1886,11 +1846,7 @@ print("=" * 80)
 summary_data = []
 
 
-for variant in [
-    'REAL',
-    'GAUSSIAN',
-    'SALT_PEPPER'
-]:
+for variant in VARIANTS:
 
     data = all_results[variant]
 

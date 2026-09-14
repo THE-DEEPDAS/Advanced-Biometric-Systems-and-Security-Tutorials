@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-09-14T09:48:17.840697",
+  "dataset_info": {
+    "total_subjects": 82,
+    "genuine_pairs": 82,
+    "impostor_pairs_tested": 5000
+  },
+  "variants": {
+    "AGE_GAP": {
+      "statistics": {
+        "genuine": {
+          "mean": 0.27027190754916974,
+          "std": 0.16042017207018275,
+          "min": -0.10709992796182632,
+          "max": 0.6725358963012695
+        },
+        "impostor": {
+          "mean": 0.12362068403782323,
+          "std": 0.1437324027697819,
+          "min": -0.35560983419418335,
+          "max": 0.6393306255340576
+        }
+      },
+      "performance_metrics": {
+        "eer": 0.3234341463414634,
+        "eer_threshold": 0.19439016580581714,
+        "auc": 0.7472975609756097,
+        "separability_gap": 0.14665122351134652
+      },
+      "threshold_operating_points": [
+        {
+          "threshold": 0.55,
+          "FMR": 0.002,
+          "FNMR": 0.9634146341463414,
+          "MATED": 0.03658536585365857,
+          "NONMATED": 0.002
+        },
+        {
+          "threshold": 0.6,
+          "FMR": 0.001,
+          "FNMR": 0.975609756097561,
+          "MATED": 0.024390243902439046,
+          "NONMATED": 0.001
+        },
+        {
+          "threshold": 0.65,
+          "FMR": 0.0,
+          "FNMR": 0.9878048780487805,
+          "MATED": 0.012195121951219523,
+          "NONMATED": 0.0
+        },
+        {
+          "threshold": 0.7,
+          "FMR": 0.0,
+          "FNMR": 1.0,
+          "MATED": 0.0,
+          "NONMATED": 0.0
+        },
+        {
+          "threshold": 0.75,
+          "FMR": 0.0,
+          "FNMR": 1.0,
+          "MATED": 0.0,
+          "NONMATED": 0.0
+        },
+        {
+          "threshold": 0.8,
+          "FMR": 0.0,
+          "FNMR": 1.0,
+          "MATED": 0.0,
+          "NONMATED": 0.0
+        },
+        {
+          "threshold": 0.85,
+          "FMR": 0.0,
+          "FNMR": 1.0,
+          "MATED": 0.0,
+          "NONMATED": 0.0
+        },
+        {
+          "threshold": 0.9,
+          "FMR": 0.0,
+          "FNMR": 1.0,
+          "MATED": 0.0,
+          "NONMATED": 0.0
+        }
+      ]
+    }
+  }
+}
