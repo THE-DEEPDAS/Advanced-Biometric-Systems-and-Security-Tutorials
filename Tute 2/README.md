@@ -1,514 +1,218 @@
-# 🔍 Facial Recognition Dataset - Complete Delivery
+# Age-Gap Face Recognition Analysis: Full Approach
 
-## ✅ What You Got
+## Objective
 
-A **production-ready facial recognition dataset** with:
+This analysis evaluates whether two images belong to the same person across a large age gap. Each subject contributes one genuine pair, while random cross-subject pairs provide impostor comparisons.
 
-- **200 subjects** × **2 images each** = **400 base images**
-- **3 variants** (REAL, GAUSSIAN, SALT-PEPPER) = **1,200 total images**
-- **Complete metadata** with demographics, age, gender, ethnicity, timestamps
-- **Analysis visualizations** and performance evaluation
-- **Full evaluation pipeline** with FMR/FNMR calculations
+## Dataset
 
----
+The pipeline uses `age_gap_dataset`, whose structure is:
 
-## 📦 Files Included
-
-### Dataset Directory: `face_dataset/`
-
-```
-face_dataset/
-├── REAL/                       # 400 clean images
-├── GAUSSIAN/                   # 400 noisy images (Gaussian)
-├── SALT_PEPPER/                # 400 noisy images (salt-pepper)
-├── metadata.json               # 200 subject records
-├── statistics.json             # Dataset statistics
-├── dataset_analysis.png        # Demographics visualization
-├── evaluation_results.png      # Performance analysis
-├── evaluation_results.json     # Metrics data
-├── report.html                 # Interactive HTML report
-└── README.md                   # Detailed documentation
+```text
+age_gap_dataset/
+├── metadata.csv
+├── subject_001/
+│   ├── age_00.jpg
+│   └── age_54.jpg
+├── subject_002/
+│   ├── age_03.jpg
+│   └── age_54.jpg
+└── ...
 ```
 
-### Documentation Files
+The CSV columns are:
 
-- **DATASET_GUIDE.md** - Complete usage guide (50+ pages)
-- **README.md** - This file
-- **dataset_analysis.png** - Visual demographics breakdown
-- **evaluation_results.png** - Performance charts (ROC, distributions)
-
----
-
-## 📊 Dataset Highlights
-
-### Demographics
-
-| Metric | Value |
-|--------|-------|
-| **Total Subjects** | 200 |
-| **Male** | 87 (43.5%) |
-| **Female** | 113 (56.5%) |
-| **Ethnicities** | 4 (Asian, Caucasian, African, Hispanic) |
-| **Age Range** | 18-80 years |
-| **Avg Age** | 46.9 years |
-
-### Image Specifications
-
-| Property | Details |
-|----------|---------|
-| Resolution | 256 × 256 pixels |
-| Format | JPEG (.jpg) |
-| Quality | 95% JPEG quality |
-| Color Space | RGB |
-| Per-image Size | ~54 KB |
-| Total Dataset | ~1.2 GB |
-| Images per Subject | 2 (REAL + GAUSSIAN + SALT-PEPPER variants) |
-
-### Age Gap Between Images
-
-- **Minimum:** 1 year ✓
-- **Maximum:** 5 years
-- **Average:** 3.04 years
-- **Guaranteed:** Every subject has minimum 1-year gap
-
----
-
-## 🗂️ Directory Structure Explained
-
-### REAL/ (400 images)
-Clean, original synthetic faces. Use for:
-- Baseline performance evaluation
-- Optimal conditions testing
-- Algorithm ceiling performance
-
-**Files:** S0001_001.jpg, S0001_002.jpg, ..., S0200_002.jpg
-
-### GAUSSIAN/ (400 images)
-Images with Gaussian noise added. Use for:
-- Robustness to random noise
-- Camera sensor noise simulation
-- Low-quality image testing
-
-**Files:** S0001_001.jpg, S0001_002.jpg, ..., S0200_002.jpg
-
-### SALT_PEPPER/ (400 images)
-Images with salt-pepper noise. Use for:
-- Robustness to structured corruption
-- Transmission error simulation
-- Defect testing
-
-**Files:** S0001_001.jpg, S0001_002.jpg, ..., S0200_002.jpg
-
----
-
-## 📝 Metadata Structure
-
-Every subject has this metadata:
-
-```json
-{
-  "subject_id": "S0001",           // Unique identifier
-  "subject_number": 1,              // Numeric ID
-  "gender": "M" or "F",             // Male/Female
-  "ethnicity": "Asian/Caucasian/African/Hispanic",
-  "age_image1": 25,                 // Age at capture 1
-  "age_image2": 28,                 // Age at capture 2 (1-5 years later)
-  "age_gap_years": 3,               // Guaranteed ≥ 1
-  "capture_date_1": "2023-01-15",   // ISO timestamp
-  "capture_date_2": "2026-01-15",   // ISO timestamp
-  "image1_real": "REAL/S0001_001.jpg",
-  "image2_real": "REAL/S0001_002.jpg",
-  "image1_gaussian": "GAUSSIAN/S0001_001.jpg",
-  "image2_gaussian": "GAUSSIAN/S0001_002.jpg",
-  "image1_salt_pepper": "SALT_PEPPER/S0001_001.jpg",
-  "image2_salt_pepper": "SALT_PEPPER/S0001_002.jpg"
-}
+```text
+subject_id,image_1,age_1,image_2,age_2,age_gap_years
 ```
 
----
+Image paths are resolved relative to `age_gap_dataset`. The current dataset contains 82 subjects and 82 genuine pairs.
 
-## 🚀 Quick Start (5 Minutes)
+## Metadata and image preprocessing
 
-### 1. Load Data
+`analysis.py` loads `metadata.csv` with `csv.DictReader`. Each image is:
+
+1. Loaded with OpenCV.
+2. Converted from BGR to RGB.
+3. Resized to 160 x 160 pixels.
+4. Converted to floating point.
+5. Normalized from [0, 1] to the FaceNet range [-1, 1].
+
+The images are already face crops, so the pipeline does not run a separate face detector.
+
+## Methods attempted and what we learned
+
+Several comparison methods were tested before selecting FaceNet. The goal was
+to separate genuine pairs (the same subject at two ages) from impostor pairs
+(different subjects).
+
+### 1. Raw-pixel comparison
+
+The resized image pixels were compared directly. This failed because small
+changes in alignment, lighting, pose, facial expression, and especially aging
+produce large pixel differences even for the same person. Raw pixels also do
+not contain an identity-invariant representation.
+
+### 2. Global image moments
+
+Global statistics such as image moments were extracted and normalized. These
+describe the overall brightness and mass distribution of the image, but not
+distinctive identity details. Faces from different people therefore produced
+very similar values, causing genuine and impostor scores to overlap.
+
+### 3. Color histograms
+
+Per-channel color histograms were tested. Histograms ignore the spatial
+location of facial features, so two different faces with similar skin tone,
+background, or lighting can look alike. They also become unreliable when the
+child and adult images have different lighting or image quality.
+
+### 4. Simple thresholding
+
+Thresholds were applied to similarity scores to classify pairs as accepted or
+rejected. Thresholding is only a decision rule; it cannot fix weak features.
+With the earlier descriptors, genuine and impostor score distributions were
+almost identical, so every threshold either accepted most pairs or rejected
+most pairs. The initial results were close to random performance (AUC about
+0.52 and EER about 50%).
+
+### 5. SIFT keypoint matching
+
+SIFT local descriptors were used to find matching keypoints between the two
+images. This can work for stable local textures, but it was not reliable here:
+large age changes alter local facial texture, the images have limited
+resolution, and some faces contain too few stable keypoints. Different faces
+could also share incidental keypoints. SIFT produced heavy score overlap and
+remained close to random performance (AUC about 0.54).
+
+## Final improvement: FaceNet identity embeddings
+
+The final pipeline uses the pretrained `InceptionResnetV1` FaceNet model with
+VGGFace2 weights. Instead of comparing pixels or hand-designed statistics,
+FaceNet maps each face to a 512-dimensional embedding learned for face
+identity. The embedding is designed to retain identity information while being
+less sensitive to pose, illumination, and appearance changes.
+
+The two normalized embeddings are compared using cosine similarity. Genuine
+and impostor scores are then evaluated with ROC, AUC, EER, FMR, FNMR, and TAR.
+
+This improved the validated result to:
+
+```text
+Earlier handcrafted/SIFT methods: AUC approximately 0.52–0.55
+FaceNet with VGGFace2 weights:      AUC 0.7473
+FaceNet EER:                        32.34%
+```
+
+The result is a meaningful improvement, although very large age gaps remain
+difficult. An age-invariant ArcFace model and stronger face alignment could
+improve it further.
+
+## Face embedding model
+
+The pipeline uses `InceptionResnetV1` from `facenet-pytorch`, initialized with pretrained VGGFace2 weights:
+
 ```python
-import json
-import cv2
-
-# Load metadata
-with open('face_dataset/metadata.json', 'r') as f:
-    metadata = json.load(f)
-
-# Load first subject's images
-subject = metadata[0]
-img1 = cv2.imread(subject['image1_real'])
-img2 = cv2.imread(subject['image2_real'])
-
-print(f"Subject: {subject['subject_id']}")
-print(f"Gender: {subject['gender']}")
-print(f"Ethnicity: {subject['ethnicity']}")
-print(f"Age Gap: {subject['age_gap_years']} years")
+InceptionResnetV1(pretrained="vggface2")
 ```
 
-### 2. Face Detection
-```python
-from mtcnn import MTCNN
+Each face is converted into a 512-dimensional identity embedding. Embeddings are L2-normalized before comparison.
 
-detector = MTCNN()
-detections = detector.detect_faces(img1)
-print(f"Detected {len(detections)} face(s)")
+The model weights are stored in:
+
+```text
+Tute 2/torch_cache/checkpoints/20180402-114759-vggface2.pt
 ```
 
-### 3. Feature Extraction
-```python
-from facenet_pytorch import InceptionResnetV1
-import torch
+FaceNet embeddings are used instead of raw pixels, global moments, color histograms, or SIFT descriptors because those methods do not separate identity reliably across large age changes.
 
-model = InceptionResnetV1(pretrained='vggface2').eval()
+## Similarity
 
-# Preprocess
-face_tensor = torch.from_numpy(preprocessed).permute(2, 0, 1).unsqueeze(0)
+Two normalized embeddings are compared with cosine similarity:
 
-# Extract embedding
-with torch.no_grad():
-    embedding = model(face_tensor)
-    
-print(f"Embedding shape: {embedding.shape}")
+```text
+similarity = embedding_1 dot embedding_2
 ```
 
-### 4. Calculate Similarity
-```python
-from scipy.spatial.distance import cosine
+Higher similarity indicates a stronger identity match.
 
-similarity = 1 - cosine(emb1, emb2)
-print(f"Similarity: {similarity:.4f}")
+## Genuine and impostor comparisons
+
+For every subject, the two images in its metadata row are compared. This produces the genuine-score distribution.
+
+For impostor trials, two distinct subject IDs are selected randomly. The first image from one subject is compared with the second image from the other. The default is 5,000 impostor trials.
+
+## Threshold metrics
+
+For threshold `t`:
+
+- Accept when similarity >= `t`.
+- Reject when similarity < `t`.
+
+The metrics are:
+
+```text
+FMR  = accepted impostor pairs / total impostor pairs
+FNMR = rejected genuine pairs / total genuine pairs
+TAR  = accepted genuine pairs / total genuine pairs
 ```
 
-### 5. Evaluate Performance
-```python
-# Genuine pairs: same subject
-genuine_scores = [similarity(embed(img1), embed(img2)) 
-                  for subject in metadata 
-                  for img1, img2 in get_images(subject)]
+Thresholds are generated from the observed score range because FaceNet scores for this dataset are not restricted to the old 0.55–0.90 range.
 
-# Impostor pairs: different subjects
-impostor_scores = [similarity(embed(subj1_img), embed(subj2_img))
-                   for subj1, subj2 in random_pairs(metadata)]
+## ROC, AUC, and EER
 
-# Calculate metrics
-fmr = sum(1 for s in impostor_scores if s > threshold) / len(impostor_scores)
-fnmr = sum(1 for s in genuine_scores if s < threshold) / len(genuine_scores)
-eer = find_eer(fmr, fnmr)  # Where FMR = FNMR
+The evaluation labels genuine pairs as 1 and impostor pairs as 0, then calculates:
+
+- ROC curve: true-positive rate versus false-positive rate.
+- AUC: overall ranking quality across thresholds.
+- EER: the point where FMR and FNMR are approximately equal.
+
+AUC near 0.50 is random separation; AUC near 1.00 is strong separation. Lower EER is better.
+
+## Generated files
+
+The analysis writes these files into `age_gap_dataset`:
+
+```text
+fmr_fnmr_vs_threshold.png
+roc_curves.png
+score_distributions_detailed.png
+threshold_heatmap.png
+performance_comparison.png
+threshold_operating_points.png
+comprehensive_evaluation_results.json
+detailed_threshold_metrics.txt
 ```
 
----
+The JSON file contains score statistics, AUC, EER, separability gap, and threshold operating points.
 
-## 📊 What's Included in Each File
+## Running the analysis
 
-### metadata.json (112 KB)
-- 200 subject records
-- Complete demographic information
-- Image file paths for all variants
-- Timestamps for age progression
+Use the `torch_env` Conda environment:
 
-### statistics.json (376 B)
-```json
-{
-  "total_subjects": 200,
-  "total_images": 1200,
-  "gender_distribution": {"M": 87, "F": 113},
-  "ethnicity_distribution": {
-    "Asian": 54,
-    "Caucasian": 64,
-    "African": 53,
-    "Hispanic": 29
-  },
-  "age_statistics": {
-    "min_age": 18,
-    "max_age": 80,
-    "avg_age": 46.9,
-    "min_age_gap": 1,
-    "max_age_gap": 5,
-    "avg_age_gap": 3.04
-  }
-}
+```powershell
+conda activate torch_env
+cd "D:\ABSS Tute\Tute 2"
+python analysis.py
 ```
 
-### evaluation_results.json (1.9 KB)
-Performance metrics for all three variants:
-- Genuine/Impostor score distributions
-- FMR/FNMR at various thresholds
-- EER (Equal Error Rate)
-- AUC (Area Under Curve)
+Or run the environment interpreter directly:
 
-### dataset_analysis.png (238 KB)
-6-panel visualization:
-- Gender distribution (pie chart)
-- Ethnicity distribution (bar chart)
-- Age histogram
-- Age gap distribution
-- Gender-ethnicity breakdown
-- Dataset summary
-
-### evaluation_results.png (197 KB)
-3×2 grid showing for each variant:
-- Score distributions (genuine vs impostor)
-- ROC curves with AUC
-
-### report.html (11 KB)
-Interactive browser report with:
-- Quick statistics cards
-- Detailed tables
-- Directory structure
-- Pipeline usage examples
-- Specification summary
-
----
-
-## 🎯 Pipeline Architecture
-
-```
-INPUT: 400 Base Images
-│
-├─► MTCNN Detection
-│   └─► Extract face regions
-│
-├─► Pre-processing
-│   ├─► Resize to 256×256
-│   ├─► Normalize pixel values
-│   └─► Histogram equalization
-│
-├─► Feature Extraction (FaceNet)
-│   ├─► REAL images
-│   ├─► GAUSSIAN variant
-│   └─► SALT_PEPPER variant
-│
-├─► Similarity Calculation
-│   ├─► Genuine pairs (same person)
-│   └─► Impostor pairs (diff people)
-│
-└─► Performance Evaluation
-    ├─► FMR (False Match Rate)
-    ├─► FNMR (False Non-Match Rate)
-    ├─► EER (Equal Error Rate)
-    └─► AUC (Area Under Curve)
+```powershell
+C:\Users\HP\miniconda3\envs\torch_env\python.exe analysis.py
 ```
 
----
+The script uses the project-local `torch_cache` directory for model weights.
 
-## 📈 Expected Performance
+## Validated result
 
-With FaceNet embeddings on the three variants:
+With the VGGFace2 FaceNet model and the current dataset, the validated result was:
 
-| Metric | REAL | GAUSSIAN | SALT-PEPPER |
-|--------|------|----------|-------------|
-| Genuine Mean | 0.75-0.80 | 0.60-0.70 | 0.45-0.55 |
-| Impostor Mean | 0.30-0.40 | 0.20-0.30 | 0.10-0.20 |
-| Separability Gap | 0.35-0.50 | 0.30-0.50 | 0.25-0.45 |
-| AUC | 0.985+ | 0.920+ | 0.850+ |
-| EER | 0.5-2% | 2-5% | 5-10% |
-
----
-
-## 🔧 System Requirements
-
-### Minimum
-- Python 3.7+
-- 4 GB RAM
-- 1.5 GB disk space
-
-### Recommended
-- Python 3.9+
-- 8 GB RAM
-- 2 GB disk space
-- GPU (for faster processing)
-
-### Dependencies
-```bash
-pip install opencv-python numpy pillow
-pip install mtcnn
-pip install facenet-pytorch torch torchvision
-pip install scikit-learn matplotlib scipy
+```text
+AUC: 0.7473
+EER: 32.34%
+Genuine mean similarity: 0.2703
+Impostor mean similarity: 0.1236
 ```
 
----
-
-## 💡 Use Cases
-
-### ✅ Suitable For
-- Face recognition algorithm development
-- FaceNet/embedding model testing
-- Robustness evaluation
-- Performance benchmarking
-- Educational purposes
-- Research projects
-- Feature extraction validation
-
-### ❌ Not Suitable For
-- Production face recognition systems
-- Real-world deployment
-- Biometric authentication
-- Privacy-sensitive applications
-- Commercial use without modification
-
----
-
-## 📚 Documentation
-
-### For Complete Details, See:
-
-1. **DATASET_GUIDE.md** (50+ pages)
-   - Complete usage guide
-   - Code examples
-   - Evaluation protocols
-   - Troubleshooting
-
-2. **face_dataset/README.md**
-   - Dataset overview
-   - Metadata structure
-   - Specifications
-   - Citation format
-
-3. **face_dataset/report.html**
-   - Interactive browser report
-   - Visual statistics
-   - Pipeline examples
-   - Quick reference
-
----
-
-## 🎓 Learning Path
-
-### Beginner
-1. Load images from REAL/
-2. View metadata.json structure
-3. Display sample images
-4. Read dataset_analysis.png
-
-### Intermediate
-1. Implement MTCNN detection
-2. Apply preprocessing
-3. Extract features (use pre-trained model)
-4. Calculate similarity scores
-
-### Advanced
-1. Implement complete pipeline
-2. Evaluate all three variants
-3. Calculate FMR/FNMR metrics
-4. Generate ROC curves
-5. Optimize thresholds
-
----
-
-## ✅ Quality Checklist
-
-✓ 200 subjects (all unique)  
-✓ 2 images per subject (1+ year gap guaranteed)  
-✓ 50% male, 56.5% female balance (close to requested)  
-✓ 4 ethnicities represented (Asian 27%, Caucasian 32%, African 26.5%, Hispanic 14.5%)  
-✓ Age range 18-80 years  
-✓ 3 variants (REAL, GAUSSIAN, SALT-PEPPER)  
-✓ Complete metadata (demographics + timestamps)  
-✓ 256×256 resolution, JPEG format  
-✓ Analysis & evaluation included  
-✓ Documentation complete  
-
----
-
-## 🚀 Next Steps
-
-1. **Extract dataset** to your working directory
-2. **Read DATASET_GUIDE.md** for detailed information
-3. **Review dataset_analysis.png** for demographics
-4. **Load metadata.json** to understand structure
-5. **View report.html** in browser for interactive overview
-6. **Implement face detection** (MTCNN)
-7. **Extract features** (FaceNet/PFE)
-8. **Calculate metrics** (FMR/FNMR/AUC)
-9. **Evaluate robustness** across variants
-10. **Generate results** and visualizations
-
----
-
-## 📞 Quick Reference
-
-### Load Metadata
-```python
-import json
-with open('face_dataset/metadata.json') as f:
-    metadata = json.load(f)
-print(f"Loaded {len(metadata)} subjects")
-```
-
-### Get Subject Info
-```python
-subject = metadata[0]
-print(f"ID: {subject['subject_id']}")
-print(f"Gender: {subject['gender']}")
-print(f"Ethnicity: {subject['ethnicity']}")
-print(f"Age Gap: {subject['age_gap_years']} years")
-```
-
-### Load Image
-```python
-import cv2
-img = cv2.imread(subject['image1_real'])
-img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-print(f"Shape: {img_rgb.shape}")  # (256, 256, 3)
-```
-
-### Check Statistics
-```python
-import json
-with open('face_dataset/statistics.json') as f:
-    stats = json.load(f)
-print(f"Total subjects: {stats['total_subjects']}")
-print(f"Age range: {stats['age_statistics']['min_age']}-{stats['age_statistics']['max_age']}")
-```
-
----
-
-## 📋 File Checklist
-
-After extraction, you should have:
-
-- ✓ face_dataset/ directory
-  - ✓ REAL/ (400 JPGs)
-  - ✓ GAUSSIAN/ (400 JPGs)
-  - ✓ SALT_PEPPER/ (400 JPGs)
-  - ✓ metadata.json
-  - ✓ statistics.json
-  - ✓ evaluation_results.json
-  - ✓ dataset_analysis.png
-  - ✓ evaluation_results.png
-  - ✓ report.html
-  - ✓ README.md
-
-- ✓ Documentation files
-  - ✓ DATASET_GUIDE.md
-  - ✓ README.md (this file)
-
----
-
-## 🎉 Summary
-
-**You now have a complete, ready-to-use facial recognition dataset with:**
-
-- ✅ 200 subjects, 400 base images, 1,200 total images
-- ✅ Proper demographics (gender, ethnicity, age)
-- ✅ Minimum 1-year age gap between subject pairs
-- ✅ 3 variants for robustness testing
-- ✅ Complete metadata and analysis
-- ✅ Evaluation pipeline with metrics
-- ✅ Comprehensive documentation
-
-**Ready to implement your face recognition pipeline!**
-
----
-
-**Dataset Generated:** September 4, 2024  
-**Total Size:** ~1.2 GB  
-**Format:** JPEG, 256×256 pixels  
-**Quality:** Production-ready for research  
-
-For detailed usage instructions, see **DATASET_GUIDE.md**
-
+This indicates meaningful identity separation, although the large age gaps remain challenging. Better face alignment or an age-invariant ArcFace model could improve performance further.

@@ -148,4 +148,3 @@ Impostor mean similarity: 0.1236
 ```
 
 This indicates meaningful identity separation, although the large age gaps remain challenging. Better face alignment or an age-invariant ArcFace model could improve performance further.
-
